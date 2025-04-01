@@ -99,12 +99,16 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             if (validateTaskForm()) {
+                const dueDate = taskDueDate.value;
+                const dueTime = document.getElementById('taskDueTime').value;
+                const dueDateTime = dueDate && dueTime ? `${dueDate}T${dueTime}` : dueDate;
+
                 if (taskId.value) {
                     updateTask(
                         taskId.value,
                         taskTitle.value,
                         taskDescription.value,
-                        taskDueDate.value,
+                        dueDateTime,
                         taskPriority.value,
                         taskCategory.value
                     );
@@ -112,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     addTask(
                         taskTitle.value,
                         taskDescription.value,
-                        taskDueDate.value,
+                        dueDateTime,
                         taskPriority.value,
                         taskCategory.value
                     );
@@ -175,6 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
         taskId.value = '';
         taskTitle.classList.remove('is-invalid');
         taskDescription.classList.remove('is-invalid');
+        document.getElementById('taskDueTime').value = '';
         saveTaskBtn.innerHTML = '<i class="fas fa-save me-1"></i>Save';
     }
     
@@ -235,7 +240,20 @@ document.addEventListener('DOMContentLoaded', function() {
         if (taskToEdit) {
             taskTitle.value = taskToEdit.title;
             taskDescription.value = taskToEdit.description;
-            taskDueDate.value = taskToEdit.dueDate;
+            
+            // Handle date and time separately
+            if (taskToEdit.dueDate) {
+                const dateTime = new Date(taskToEdit.dueDate);
+                const dateStr = dateTime.toISOString().split('T')[0];
+                const timeStr = dateTime.toTimeString().substring(0, 5);
+                
+                taskDueDate.value = dateStr;
+                document.getElementById('taskDueTime').value = timeStr;
+            } else {
+                taskDueDate.value = '';
+                document.getElementById('taskDueTime').value = '';
+            }
+            
             taskPriority.value = taskToEdit.priority;
             taskCategory.value = taskToEdit.category;
             taskId.value = taskToEdit.id;
@@ -260,12 +278,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    function isOverdue(dueDate) {
-        if (!dueDate) return false;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const due = new Date(dueDate);
-        return due < today;
+    function isOverdue(dueDateTime) {
+        if (!dueDateTime) return false;
+        const now = new Date();
+        const due = new Date(dueDateTime);
+        return due < now;
     }
     
     function renderTasks() {
@@ -350,7 +367,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </small>
                                 <small class="text-muted ${!task.completed && isOverdue(task.dueDate) ? 'text-danger' : ''}">
                                     <i class="fas fa-calendar-alt me-1"></i>
-                                    ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}
+                                    ${task.dueDate ? 
+                                        `${new Date(task.dueDate).toLocaleDateString()} 
+                                        ${new Date(task.dueDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` 
+                                        : 'No due date/time'}
                                     ${!task.completed && isOverdue(task.dueDate) ? '(Overdue)' : ''}
                                 </small>
                             </div>

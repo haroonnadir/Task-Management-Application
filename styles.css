@@ -153,6 +153,18 @@ body {
     color: #dee2e6;
 }
 
+input[type="date"], input[type="time"] {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+}
+
+/* For better mobile experience */
+@media (max-width: 576px) {
+    .col-md-6 {
+        margin-bottom: 1rem;
+    }
+}
 /* Contact Page Styles */
 .contact-info {
     background-color: #f8f9fa;
